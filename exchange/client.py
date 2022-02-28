@@ -61,10 +61,14 @@ class Client:
                 case 'heartbeat':
                     logger.debug('Received heartbeat: %s', message)
                     self._update_last_heartbeat()
+
                 case 'message':
                     logger.info('Received message: %s', message)
+                    # get payload
                     received_payload = json_message.get('payload')
+                    # let Exchanger do its work
                     new_payload = self.Exchanger.calculate(received_payload)
+                    # if OK
                     if isinstance(new_payload, dict):
                         json_message['payload'] = new_payload
                         logger.info('Responding with message: %s', json_message)
@@ -73,6 +77,7 @@ class Client:
                     elif isinstance(new_payload, str):
                         error_response = self._marshal_error(json_message, new_payload)
                         await websocket.send(json.dumps(error_response))
+
                 case _ :
                     continue
 
